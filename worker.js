@@ -1,6 +1,7 @@
 const { parentPort, workerData } = require('worker_threads');
 const superagent = require('superagent');
 const fs = require('fs');
+const _ = require('lodash');
 
 /**
  * 执行单个请求任务
@@ -35,20 +36,36 @@ async function processRequest(config) {
         }
 
         const response = await request;
-        // console.log(response?.request?._data)
+
         return {
             success: true,
-            statusCode: response.status,
-            duration: Date.now() - start,
-            body: response.body,
+            response: {
+                rawHeaders: response?.res?.rawHeaders,
+                httpVersion: response?.res?.httpVersion,
+                statusCode: response.status,
+                statusMessage: response.res?.statusMessage,
+                duration: Date.now() - start,
+                body: response.body,
+            },
+            request: _.assign(config, {
+                rawHeaders: response?.req?._header
+            })
         };
     } catch (error) {
         return {
             success: false,
-            statusCode: error.status,
-            error: error.message,
-            body: error?.response?.text,
-            duration: Date.now() - start,
+            request: _.assign(config, {
+                rawHeaders: error?.response?.req?._header
+            }),
+            response: {
+                rawHeaders: error?.response?.res?.rawHeaders,
+                httpVersion: error?.response?.res?.httpVersion,
+                statusCode: error?.status,
+                statusMessage: error?.message,
+                body: error?.response?.text,
+                duration: Date.now() - start,
+            },
+            error: error.message
         };
     }
 }
