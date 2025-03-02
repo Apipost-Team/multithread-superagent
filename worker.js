@@ -5,6 +5,29 @@ const _ = require('lodash');
 const { getObjFromRawHeaders } = require("rawheaders2obj")
 
 /**
+ * 从HTTP请求字符串中提取header对象。
+ * @param {string} rawString - 原始HTTP请求字符串。
+ * @returns {Object} - 提取出的headers对象。
+ */
+function extractHeaders(rawString) {
+    // 按双换行符分割字符串，头部信息和请求体分开
+    const [headerString] = rawString.split('\r\n\r\n');
+
+    // 按行分割，忽略第一行（请求行）
+    const lines = _.tail(headerString.split('\r\n'));
+
+    // 构建headers对象
+    const headers = _.fromPairs(
+        lines.map(line => {
+            const [key, ...valueParts] = line.split(':');
+            return [key.trim(), valueParts.join(':').trim()]; // 处理冒号后值可能包含冒号的情况
+        })
+    );
+
+    return headers || {};
+}
+
+/**
  * 执行单个请求任务
  * @param {Object} config 请求配置
  * @returns {Promise<Object>} 请求的结果
@@ -14,7 +37,7 @@ async function processRequest(config) {
     const start = Date.now();
 
     try {
-        const request = superagent(method, url).set(headers);
+        const request = superagent(method, url).timeout(0).redirects(0).set(headers);
 
         // 根据 Content-Type 处理不同的 body
         if (body) {
@@ -49,14 +72,14 @@ async function processRequest(config) {
                 body: response.body,
             },
             request: _.assign(config, {
-                rawHeaders: response?.req?._header
+                rawHeaders: extractHeaders(response?.req?._header)
             })
         };
     } catch (error) {
         return {
             success: false,
             request: _.assign(config, {
-                rawHeaders: error?.response?.req?._header
+                rawHeaders: extractHeaders(error?.response?.req?._header)
             }),
             response: {
                 headers: getObjFromRawHeaders(error?.response?.res?.rawHeaders),

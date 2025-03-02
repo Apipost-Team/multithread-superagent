@@ -8,8 +8,8 @@ async function main() {
 
     const requests = [
         {
-            url: 'https://httpbin.org/anything',
-            method: 'POST',
+            url: 'https://httpbin.org/status/301',
+            method: 'GET',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: { message: 'Hello JSON' },
         },
