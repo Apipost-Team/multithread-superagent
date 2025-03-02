@@ -1,0 +1,27 @@
+{
+  "name": "multithread-superagent",
+  "version": "1.0.1",
+  "description": "Support for multithreaded superagent.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Apipost-Team/multithread-superagent.git"
+  },
+  "keywords": [
+    "exp-mock"
+  ],
+  "author": "Daniel Anderson <support@echoapi.com> (https://github.com/EchoAPI-Team)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Apipost-Team/multithread-superagent/issues"
+  },
+  "homepage": "https://github.com/Apipost-Team/multithread-superagent#readme",
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "superagent": "^10.1.1",
+    "uuid": "^11.1.0"
+  }
+}
