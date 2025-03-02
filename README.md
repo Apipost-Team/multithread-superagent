@@ -227,7 +227,7 @@ npm install
 
 ## Contributing
 
-Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/yourusername/RequestManager/issues).
+Contributions, issues, and feature requests are welcome! Feel free to check the [issues page](https://github.com/Apipost-Team/multithread-superagent/issues).
 
 1. Fork the repository.
 2. Create your feature branch (`git checkout -b feature/YourFeature`).
