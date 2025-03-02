@@ -1,5 +1,7 @@
 const RequestManager = require('./request-lib');
-const uuid = require('uuid');
+// const uuid = require('uuid');
+const os = require('os');
+const _ = require('lodash');
 
 async function main() {
     const requestManager = new RequestManager();
@@ -23,16 +25,14 @@ async function main() {
             body: { key1: 'value1', key2: 'value2' },
         },
     ];
-    for (let i = 0; i < 1000; i++) {
-        requests.push({
-            url: 'https://httpbin.org/anything',
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: { uuid: uuid.v4() },
-        })
-    }
 
-    const maxWorkers = 8;
+    // 获取 CPU 信息
+    let cpuCores = 8;
+    try {
+        cpuCores = _.size(os.cpus()) || 4
+    } catch (e) { }
+
+    const maxWorkers = _.min([cpuCores, 8]);
     const startTimestamp = Date.now()
 
     // 实时监听每个请求的结果

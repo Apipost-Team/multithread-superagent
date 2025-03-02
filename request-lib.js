@@ -6,7 +6,7 @@ class RequestManager extends EventEmitter {
     constructor(config = {}) {
         super();
         this.config = {
-            maxWorkers: 5, // 最大并发线程数
+            maxWorkers: 4, // 最大并发线程数
             ...config,
         };
         this.totalRequests = 0; // 请求总数
@@ -26,6 +26,10 @@ class RequestManager extends EventEmitter {
 
         this.totalRequests = requestConfigs.length;
         this.completedRequests = 0;
+
+        if (this.totalRequests < maxWorkers) {
+            maxWorkers = 1;
+        }
 
         const chunks = this._chunkRequests(requestConfigs, maxWorkers); // 按线程数分块
         const workerPromises = chunks.map(chunk =>
