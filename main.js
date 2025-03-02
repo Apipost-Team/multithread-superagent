@@ -8,18 +8,18 @@ async function main() {
 
     const requests = [
         {
-            url: 'https://httpbin.org/post',
+            url: 'https://httpbin.org/anything',
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: { message: 'Hello JSON' },
         },
+        // {
+        //     url: 'https://httpbin.org/anything',
+        //     method: 'GET',
+        //     headers: {},
+        // },
         {
-            url: 'https://httpbin.org/get',
-            method: 'GET',
-            headers: {},
-        },
-        {
-            url: 'https://httpbin.org/post',
+            url: 'https://httpbin.org/404',
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: { key1: 'value1', key2: 'value2' },

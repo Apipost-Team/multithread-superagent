@@ -35,6 +35,7 @@ async function processRequest(config) {
         }
 
         const response = await request;
+        // console.log(response?.request?._data)
         return {
             success: true,
             statusCode: response.status,
@@ -44,7 +45,9 @@ async function processRequest(config) {
     } catch (error) {
         return {
             success: false,
+            statusCode: error.status,
             error: error.message,
+            body: error?.response?.text,
             duration: Date.now() - start,
         };
     }
