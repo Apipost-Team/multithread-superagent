@@ -1,4 +1,4 @@
-# RequestManager
+# multithread-superagent
 
 A Node.js library for executing and managing concurrent HTTP requests with real-time feedback on progress and results.
 
@@ -11,7 +11,7 @@ A Node.js library for executing and managing concurrent HTTP requests with real-
   
 ## How It Works
 
-The `RequestManager` uses Node.js `worker_threads` to handle concurrent HTTP requests efficiently. Each worker processes a chunk of requests, sending individual results and progress updates back to the main thread.
+The `multithread-superagent` uses Node.js `worker_threads` to handle concurrent HTTP requests efficiently. Each worker processes a chunk of requests, sending individual results and progress updates back to the main thread.
 
 ---
 
@@ -19,10 +19,10 @@ The `RequestManager` uses Node.js `worker_threads` to handle concurrent HTTP req
 
 ```bash
 # Clone this repository
-git clone https://github.com/yourusername/RequestManager.git
+git clone https://github.com/Apipost-Team/multithread-superagent.git
 
 # Navigate into the project directory
-cd RequestManager
+cd multithread-superagent
 
 # Install dependencies
 npm install
@@ -32,12 +32,12 @@ npm install
 
 ## Usage
 
-Here is an example of using the `RequestManager` to perform multiple HTTP requests with real-time progress feedback.
+Here is an example of using the `multithread-superagent` to perform multiple HTTP requests with real-time progress feedback.
 
 ### Example
 
 1. **Prepare request configurations**: Define the URLs, methods, headers, and bodies for your requests.
-2. **Initialize the `RequestManager`**: Create an instance of the library and define the maximum number of concurrent workers.
+2. **Initialize the `multithread-superagent`**: Create an instance of the library and define the maximum number of concurrent workers.
 3. **Listen for events**: Use event listeners for progress updates (`progress`), individual results (`result`), and when all requests are completed (`finished`).
 
 ```javascript

@@ -23,7 +23,7 @@ async function main() {
             body: { key1: 'value1', key2: 'value2' },
         },
     ];
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 1000; i++) {
         requests.push({
             url: 'https://httpbin.org/anything',
             method: 'POST',
