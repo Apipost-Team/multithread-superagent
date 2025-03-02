@@ -42,12 +42,12 @@ async function main() {
 
     // 实时更新进度
     requestManager.on('progress', ({ completed, total }) => {
-        // console.log(`Progress: ${completed}/${total}`);
+        console.log(`Progress: ${completed}/${total}`);
     });
 
     // 所有请求完成的事件
     requestManager.on('finished', ({ completed }) => {
-        // console.log(`All requests completed. Total: ${completed}`, Date.now() - startTimestamp);
+        console.log(`All requests completed. Total: ${completed}`, Date.now() - startTimestamp);
     });
 
     // 开始发送请求

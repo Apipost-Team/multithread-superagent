@@ -2,6 +2,7 @@ const { parentPort, workerData } = require('worker_threads');
 const superagent = require('superagent');
 const fs = require('fs');
 const _ = require('lodash');
+const { getObjFromRawHeaders } = require("rawheaders2obj")
 
 /**
  * 执行单个请求任务
@@ -40,7 +41,7 @@ async function processRequest(config) {
         return {
             success: true,
             response: {
-                rawHeaders: response?.res?.rawHeaders,
+                rawHeaders: getObjFromRawHeaders(response?.res?.rawHeaders),
                 httpVersion: response?.res?.httpVersion,
                 statusCode: response.status,
                 statusMessage: response.res?.statusMessage,
@@ -58,7 +59,7 @@ async function processRequest(config) {
                 rawHeaders: error?.response?.req?._header
             }),
             response: {
-                rawHeaders: error?.response?.res?.rawHeaders,
+                rawHeaders: getObjFromRawHeaders(error?.response?.res?.rawHeaders),
                 httpVersion: error?.response?.res?.httpVersion,
                 statusCode: error?.status,
                 statusMessage: error?.message,
