@@ -41,7 +41,7 @@ async function processRequest(config) {
         return {
             success: true,
             response: {
-                rawHeaders: getObjFromRawHeaders(response?.res?.rawHeaders),
+                headers: getObjFromRawHeaders(response?.res?.rawHeaders),
                 httpVersion: response?.res?.httpVersion,
                 statusCode: response.status,
                 statusMessage: response.res?.statusMessage,
@@ -59,7 +59,7 @@ async function processRequest(config) {
                 rawHeaders: error?.response?.req?._header
             }),
             response: {
-                rawHeaders: getObjFromRawHeaders(error?.response?.res?.rawHeaders),
+                headers: getObjFromRawHeaders(error?.response?.res?.rawHeaders),
                 httpVersion: error?.response?.res?.httpVersion,
                 statusCode: error?.status,
                 statusMessage: error?.message,
