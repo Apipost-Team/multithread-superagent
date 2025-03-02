@@ -11,33 +11,34 @@ const { getObjFromRawHeaders } = require("rawheaders2obj")
  */
 function extractHeaders(rawString) {
     // 按双换行符分割字符串，头部信息和请求体分开
-    const [headerString] = rawString.split('\r\n\r\n');
+    try {
+        const [headerString] = rawString.split('\r\n\r\n');
 
-    // 按行分割，忽略第一行（请求行）
-    const lines = _.tail(headerString.split('\r\n'));
+        // 按行分割，忽略第一行（请求行）
+        const lines = _.tail(headerString.split('\r\n'));
 
-    // 构建headers对象
-    const headers = _.fromPairs(
-        lines.map(line => {
-            const [key, ...valueParts] = line.split(':');
-            return [key.trim(), valueParts.join(':').trim()]; // 处理冒号后值可能包含冒号的情况
-        })
-    );
+        // 构建headers对象
+        const headers = _.fromPairs(
+            lines.map(line => {
+                const [key, ...valueParts] = line.split(':');
+                return [key.trim(), valueParts.join(':').trim()]; // 处理冒号后值可能包含冒号的情况
+            })
+        );
 
-    return headers || {};
+        return headers || {};
+    } catch (e) {
+        return {}
+    }
+
 }
 
-/**
- * 执行单个请求任务
- * @param {Object} config 请求配置
- * @returns {Promise<Object>} 请求的结果
- */
-async function processRequest(config) {
-    const { url, method = 'GET', headers = {}, body = null } = config;
-    const start = Date.now();
+(async () => {
+    const { url, method = 'GET', headers = {}, body = null } = workerData;
 
+    const startTime = Date.now();
     try {
-        const request = superagent(method, url).timeout(0).redirects(0).set(headers);
+        //timeout(0).
+        const request = superagent(method, url).redirects(0).set(headers);
 
         // 根据 Content-Type 处理不同的 body
         if (body) {
@@ -61,53 +62,36 @@ async function processRequest(config) {
 
         const response = await request;
 
-        return {
+        parentPort.postMessage({
             success: true,
             response: {
-                headers: getObjFromRawHeaders(response?.res?.rawHeaders),
+                headers: getObjFromRawHeaders(response?.res?.rawHeaders || ''),
                 httpVersion: response?.res?.httpVersion,
                 statusCode: response.status,
                 statusMessage: response.res?.statusMessage,
-                duration: Date.now() - start,
+                duration: Date.now() - startTime,
                 body: response.body,
             },
-            request: _.assign(config, {
-                rawHeaders: extractHeaders(response?.req?._header)
+            request: _.assign({ url, method, headers, body }, {
+                rawHeaders: extractHeaders(response?.req?._header || '')
             })
-        };
+        });
     } catch (error) {
-        return {
+        // 请求失败
+        parentPort.postMessage({
             success: false,
-            request: _.assign(config, {
-                rawHeaders: extractHeaders(error?.response?.req?._header)
+            request: _.assign({ url, method, headers, body }, {
+                rawHeaders: extractHeaders(error?.response?.req?._header || '')
             }),
             response: {
-                headers: getObjFromRawHeaders(error?.response?.res?.rawHeaders),
+                headers: getObjFromRawHeaders(error?.response?.res?.rawHeaders || ''),
                 httpVersion: error?.response?.res?.httpVersion,
                 statusCode: error?.status,
                 statusMessage: error?.message,
                 body: error?.response?.text,
-                duration: Date.now() - start,
+                duration: Date.now() - startTime,
             },
             error: error.message
-        };
+        });
     }
-}
-
-/**
- * 逐个执行传入的请求任务集
- * @param {Array} requestConfigs 请求配置数组
- */
-async function executeRequests(requestConfigs) {
-    for (const config of requestConfigs) {
-        const result = await processRequest(config);
-
-        // 每个请求完成后实时发送结果到主线程
-        parentPort.postMessage({ progress: true, result });
-    }
-}
-
-// 开始执行任务
-executeRequests(workerData).catch(error => {
-    parentPort.postMessage({ success: false, error: error.message });
-});
+})();

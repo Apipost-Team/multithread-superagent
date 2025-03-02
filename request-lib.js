@@ -5,88 +5,124 @@ const path = require('path');
 class RequestManager extends EventEmitter {
     constructor(config = {}) {
         super();
-        this.config = {
-            maxWorkers: 4, // 最大并发线程数
-            ...config,
-        };
-        this.totalRequests = 0; // 请求总数
-        this.completedRequests = 0; // 已完成的请求数
+        // 默认最大并行工作线程数
+        this.maxWorkers = config.maxWorkers || 4;
+        this.isCancelled = false; // 标记请求是否被取消
+        this.workerPool = []; // 保存活跃的工作线程
     }
 
     /**
-     * 发起多个请求
+     * 中断所有请求
+     */
+    cancel() {
+        this.isCancelled = true;
+
+        // 中断所有活跃的 Worker
+        this.workerPool.forEach(worker => {
+            worker.terminate(); // 强制终止 Worker 线程
+        });
+
+        // 清空 Worker 池
+        this.workerPool = [];
+        this.emit('cancel', { message: 'All requests have been cancelled.' });
+    }
+
+    /**
+     * 执行 HTTP 请求数组
      * @param {Array} requestConfigs 请求配置数组
-     * @param {Number} [maxWorkers=this.config.maxWorkers] 最大同时运行的线程数
-     * @returns {Promise<void>} 不返回结果（使用事件监听单个结果和进度）
+     * @param {Number} maxWorkers 最大并行线程数
      */
-    async sendRequests(requestConfigs, maxWorkers = this.config.maxWorkers) {
-        if (!Array.isArray(requestConfigs)) {
-            throw new Error('Request configurations must be an array.');
+    async sendRequests(requestConfigs, maxWorkers) {
+        if (!Array.isArray(requestConfigs) || requestConfigs?.length === 0) {
+            throw new Error('Invalid request configs: must be a non-empty array.');
         }
 
-        this.totalRequests = requestConfigs.length;
-        this.completedRequests = 0;
-
-        if (this.totalRequests < maxWorkers) {
-            maxWorkers = 1;
+        // 确定最大并行数
+        const totalRequests = requestConfigs?.length;
+        let workers = maxWorkers || this.maxWorkers;
+        if(workers > totalRequests){
+            workers = 1
         }
+        let completedRequests = 0;
 
-        const chunks = this._chunkRequests(requestConfigs, maxWorkers); // 按线程数分块
-        const workerPromises = chunks.map(chunk =>
-            this._runWorker(path.resolve(__dirname, 'worker.js'), chunk)
-        );
+        // 分批次处理请求配置
+        const chunks = this.chunkArray(requestConfigs, workers);
 
-        await Promise.all(workerPromises);
-        this.emit('finished', { completed: this.completedRequests });
-    }
-
-    /**
-     * 对请求数组进行分块
-     * @param {Array} requests 请求数组
-     * @param {Number} chunkSize 每个线程分配的请求数
-     * @returns {Array<Array>} 分块后的请求配置
-     */
-    _chunkRequests(requests, chunkSize) {
-        const chunks = [];
-        for (let i = 0; i < requests.length; i += chunkSize) {
-            chunks.push(requests.slice(i, i + chunkSize));
-        }
-        return chunks;
-    }
-
-    /**
-     * 启动一个 Worker 线程
-     * @param {String} workerPath Worker 文件路径
-     * @param {Array} data 数据分块
-     * @returns {Promise<void>}
-     */
-    _runWorker(workerPath, data) {
-        return new Promise((resolve, reject) => {
-            const worker = new Worker(workerPath, { workerData: data });
-
-            // 监听 Worker 发送的单个请求结果
-            worker.on('message', message => {
-                if (message.progress) {
-                    const { result } = message;
-                    this.completedRequests++;
-
-                    // 每次完成一个请求触发 `result` 和 `progress` 事件
-                    this.emit('result', result);
-                    this.emit('progress', {
-                        completed: this.completedRequests,
-                        total: this.totalRequests,
-                    });
+        try {
+            for (let i = 0; i < chunks?.length; i++) {
+                if (this.isCancelled) {
+                    // 检查中断状态，立即退出
+                    this.emit('cancel', { message: 'Requests cancelled.', completed: completedRequests });
+                    return;
                 }
+
+                // 每批请求分配给子线程处理
+                const chunk = chunks[i];
+                const promises = chunk.map(config => this.processRequest(config));
+                const results = await Promise.all(promises);
+
+                // 处理每个子线程的结果
+                results.forEach(result => {
+                    completedRequests++;
+                    this.emit('result', result); // 触发 result 事件
+                });
+
+                // 更新进度
+                this.emit('progress', {
+                    completed: completedRequests,
+                    total: totalRequests,
+                });
+            }
+        } finally {
+            this.emit('finished', { completed: completedRequests, total: totalRequests });
+        }
+    }
+
+    /**
+     * 用子线程处理单个请求
+     * @param {Object} config 请求配置
+     */
+    async processRequest(config) {
+        return new Promise((resolve, reject) => {
+            if (this.isCancelled) {
+                resolve({ success: false, message: 'Cancelled by user.' });
+                return;
+            }
+
+            const worker = new Worker(path.resolve(__dirname, './worker.js'), {
+                workerData: config,
             });
 
-            worker.on('error', error => reject(error));
-            worker.on('exit', code => {
-                if (code !== 0) {
-                    reject(new Error(`Worker stopped with exit code ${code}`));
-                }
-                resolve();
+            this.workerPool.push(worker);
+
+            worker.on('message', result => {
+                resolve(result);
+            });
+
+            worker.on('error', error => {
+                console.log(error,11111)
+                reject({ success: false, message: error.message });
+            });
+
+            worker.on('exit', () => {
+                // 从 Worker 池中移除已退出的线程
+                const index = this.workerPool.indexOf(worker);
+                if (index > -1) this.workerPool.splice(index, 1);
             });
         });
+    }
+
+    /**
+     * 将一个数组分块（按指定大小分组）
+     * @param {Array} array 原始数组
+     * @param {Number} chunkSize 分块大小
+     */
+    chunkArray(array, chunkSize) {
+        const chunks = [];
+        for (let i = 0; i < array?.length; i += chunkSize) {
+            chunks.push(array.slice(i, i + chunkSize));
+        }
+        return chunks;
     }
 }
 
