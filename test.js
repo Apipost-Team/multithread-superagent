@@ -8,12 +8,14 @@ async function main() {
 
     const requests = [
         {
+            target_id:uuid.v4(),
             url: 'https://httpbin.org/status/401',
             method: 'GET',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: { message: 'Hello JSON' },
         },
         {
+            target_id:uuid.v4(),
             url: 'https://httpbin.org/anything',
             method: 'GET',
             headers: {},
