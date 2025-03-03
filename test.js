@@ -26,14 +26,14 @@ async function main() {
         // },
     ];
 
-    for (let i = 0; i < 200; i++) {
-        requests.push({
-            url: 'https://www.baidu.com',
-            method: 'GET',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: { message: uuid.v4() },
-        })
-    }
+    // for (let i = 0; i < 200; i++) {
+    //     requests.push({
+    //         url: 'https://www.baidu.com',
+    //         method: 'GET',
+    //         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    //         body: { message: uuid.v4() },
+    //     })
+    // }
 
     // 获取 CPU 信息
     let cpuCores = 32;
