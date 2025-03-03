@@ -26,7 +26,7 @@ async function main() {
         // },
     ];
 
-    for (let i = 0; i < 5000; i++) {
+    for (let i = 0; i < 200; i++) {
         requests.push({
             url: 'https://www.baidu.com',
             method: 'GET',
@@ -64,12 +64,12 @@ async function main() {
         console.log(`Cancellation message: ${message.message}`);
     });
 
-    // 启动请求
-    setTimeout(() => {
-        console.log('Cancelling all requests...');
-        requestManager.cancel();
-    }, 2000); // 2秒后中断请求
-    
+    // // 启动请求
+    // setTimeout(() => {
+    //     console.log('Cancelling all requests...');
+    //     requestManager.cancel();
+    // }, 2000); // 2秒后中断请求
+
     // 开始发送请求
     try {
         await requestManager.sendRequests(requests, maxWorkers);
