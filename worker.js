@@ -33,7 +33,7 @@ function extractHeaders(rawString) {
 }
 
 (async () => {
-    const { url, method = 'GET', headers = {}, body = null,target_id=''} = workerData;
+    const { url, method = 'GET', headers = {}, body = null, target_id = '', case_id = '' } = workerData;
 
     const startTime = Date.now();
     try {
@@ -65,6 +65,7 @@ function extractHeaders(rawString) {
         parentPort.postMessage({
             success: true,
             target_id,
+            case_id,
             response: {
                 headers: getObjFromRawHeaders(response?.res?.rawHeaders || ''),
                 httpVersion: response?.res?.httpVersion,
@@ -82,6 +83,7 @@ function extractHeaders(rawString) {
         parentPort.postMessage({
             success: false,
             target_id,
+            case_id,
             request: _.assign({ url, method, headers, body }, {
                 rawHeaders: extractHeaders(error?.response?.req?._header || '')
             }),
