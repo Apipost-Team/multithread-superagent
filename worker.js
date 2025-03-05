@@ -33,12 +33,12 @@ function extractHeaders(rawString) {
 }
 
 (async () => {
-    const { url, method = 'GET', headers = {}, body = null, target_id = '', case_id = '' } = workerData;
+    const { url, method = 'GET', headers = {}, query = {}, body = null, target_id = '', case_id = '' } = workerData;
 
     const startTime = Date.now();
     try {
         //timeout(0).
-        const request = superagent(method, url).redirects(0).set(headers);
+        const request = superagent(method, url).redirects(0).disableTLSCerts().set(headers).query(query);
 
         // 根据 Content-Type 处理不同的 body
         if (body) {

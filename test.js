@@ -9,17 +9,17 @@ async function main() {
     const requests = [
         {
             target_id:uuid.v4(),
-            url: 'https://httpbin.org/status/401',
+            url: 'https://httpbin.org/anything?id=1&message=2&title=哈哈👌',
             method: 'GET',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: { message: 'Hello JSON' },
+            query: { message: 'Hello JSON' },
         },
-        {
-            target_id:uuid.v4(),
-            url: 'https://httpbin.org/anything',
-            method: 'GET',
-            headers: {},
-        },
+        // {
+        //     target_id:uuid.v4(),
+        //     url: 'https://httpbin.org/anything',
+        //     method: 'GET',
+        //     headers: {},
+        // },
         // {
         //     url: 'https://httpbin.org/image/jpeg',
         //     method: 'GET',
@@ -48,7 +48,7 @@ async function main() {
 
     // 实时监听每个请求的结果
     requestManager.on('result', result => {
-        console.log('Request completed:', result);
+        console.log('Request completed:', JSON.stringify(result, null, "\t"));
     });
 
     // 实时更新进度
