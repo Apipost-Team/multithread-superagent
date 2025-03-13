@@ -38,7 +38,7 @@ function extractHeaders(rawString) {
     const startTime = Date.now();
     try {
         //timeout(0).
-        const request = superagent(method, url).redirects(0).disableTLSCerts().set(headers).query(query);
+        const request = superagent(method, url).redirects(0).timeout(10000).disableTLSCerts().set(headers).query(query);
 
         // 根据 Content-Type 处理不同的 body
         if (body) {
@@ -61,7 +61,6 @@ function extractHeaders(rawString) {
         }
 
         const response = await request;
-
         parentPort.postMessage({
             success: true,
             target_id,

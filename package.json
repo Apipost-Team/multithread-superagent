@@ -1,6 +1,6 @@
 {
   "name": "multithread-superagent",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Support for multithreaded superagent.",
   "main": "request-lib.js",
   "scripts": {
@@ -20,9 +20,13 @@
   },
   "homepage": "https://github.com/Apipost-Team/multithread-superagent#readme",
   "dependencies": {
+    "jest-openapi": "^0.14.2",
+    "json-schema-faker": "^0.5.8",
     "lodash": "^4.17.21",
     "rawheaders2obj": "^0.0.2",
+    "string-similarity": "^4.0.4",
     "superagent": "^10.1.1",
+    "supertest": "^7.0.0",
     "uuid": "^11.1.0"
   }
 }
